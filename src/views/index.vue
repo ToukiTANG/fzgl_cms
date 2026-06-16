@@ -4,7 +4,7 @@
   </div>
 </template>
 
-<script setup name="Index">
+<script setup>
 </script>
 
 <style scoped lang="scss">
