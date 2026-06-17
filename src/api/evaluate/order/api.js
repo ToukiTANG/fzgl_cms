@@ -44,3 +44,13 @@ export function updateOrder(order) {
         data: order
     })
 }
+
+//发布评议单
+
+export function publishOrder(orderId) {
+    return request({
+        url: '/evaluate/order/publish',
+        method: 'post',
+        params: {orderId: orderId}
+    })
+}

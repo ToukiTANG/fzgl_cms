@@ -36,16 +36,25 @@
           <el-table-column type="selection" width="50" align="center"/>
           <el-table-column label="评议单编号" align="center" key="orderId" prop="orderId"
                            :show-overflow-tooltip="true"/>
+          <el-table-column label="评议事项名" align="center" key="evaluateName" prop="evaluateName"/>
           <el-table-column label="被评议人姓名" align="center" key="evaluatedPersonName" prop="evaluatedPersonName"/>
           <el-table-column label="被评议人部门" align="center" key="evaluatedPersonDepartment"
                            prop="evaluatedPersonDepartment"/>
           <el-table-column label="评议截止日期" align="center" key="deadline" prop="deadline"/>
           <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
                            width="120"/>
-          <el-table-column label="状态" align="center" key="status" prop="status"/>
-          <el-table-column label="创建日期" align="center" key="createTime" prop="createTime"/>
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <el-table-column label="执行状态" align="center" key="status" prop="status">
             <template #default="scope">
+              <dict-tag :options="orderStatus" :value="scope.row.status"/>
+            </template>
+          </el-table-column>
+          <el-table-column label="创建日期" align="center" key="createTime" prop="createTime"/>
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right">
+            <template #default="scope">
+              <el-tooltip content="发布评议" placement="top" v-if="scope.row.roleId !== 1">
+                <el-button link type="primary" icon="Position" @click="handlePublish(scope.row)"
+                           v-hasPermi="['system:role:edit']"></el-button>
+              </el-tooltip>
               <el-tooltip content="修改" placement="top" v-if="scope.row.roleId !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                            v-hasPermi="['system:role:edit']"></el-button>
@@ -98,7 +107,7 @@
 </template>
 <script setup>
 
-import {addOrder, getOrder, listOrder, removeOrder, updateOrder} from "@/api/evaluate/order/api.js";
+import {addOrder, getOrder, listOrder, publishOrder, removeOrder, updateOrder} from "@/api/evaluate/order/api.js";
 
 const loading = ref(true)
 const oderList = ref([])
@@ -110,7 +119,9 @@ const single = ref(true)
 const multiple = ref(true)
 const ids = ref([])
 const {proxy} = getCurrentInstance()
-const addOrUpdateVisible = ref(false);
+const addOrUpdateVisible = ref(false)
+
+const {evaluate_order_status: orderStatus} = proxy.useDict("evaluate_order_status")
 
 const data = reactive({
   form: {
@@ -193,6 +204,20 @@ function handleDelete(row) {
     console.log({err})
   })
 }
+
+/** 发布按钮操作 */
+function handlePublish(row) {
+  const orderId = row.orderId
+  proxy.$modal.confirm('是否发布编号为"' + orderId + '"的数据项?').then(function () {
+    return publishOrder(orderId)
+  }).then(() => {
+    getList()
+    proxy.$modal.msgSuccess("删除成功")
+  }).catch((err) => {
+    console.log({err})
+  })
+}
+
 
 /** 查询评议单列表 */
 function getList() {
