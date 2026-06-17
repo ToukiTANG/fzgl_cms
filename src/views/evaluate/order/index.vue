@@ -51,17 +51,21 @@
           <el-table-column label="创建日期" align="center" key="createTime" prop="createTime"/>
           <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right">
             <template #default="scope">
-              <el-tooltip content="发布评议" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="Position" @click="handlePublish(scope.row)"
-                           v-hasPermi="['system:role:edit']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="修改" placement="top" v-if="scope.row.roleId !== 1">
+              <el-tooltip content="修改" placement="top">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                            v-hasPermi="['system:role:edit']"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.roleId !== 1">
+              <el-tooltip content="删除" placement="top">
                 <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                            v-hasPermi="['system:role:remove']"></el-button>
+              </el-tooltip>
+              <el-tooltip content="发布评议" placement="top">
+                <el-button link type="primary" icon="Position" @click="handlePublish(scope.row)"
+                           v-hasPermi="['system:role:edit']"></el-button>
+              </el-tooltip>
+              <el-tooltip content="添加评议事项" placement="top">
+                <el-button link type="primary" icon="Plus" @click="handleAddItem(scope.row)"
+                           v-hasPermi="['system:role:edit']"></el-button>
               </el-tooltip>
               <!--              <el-tooltip content="数据权限" placement="top" v-if="scope.row.roleId !== 1">-->
               <!--                <el-button link type="primary" icon="CircleCheck" @click="handleDataScope(scope.row)" v-hasPermi="['system:role:edit']"></el-button>-->
@@ -75,6 +79,9 @@
         <!-- 添加或修改对话框 -->
         <el-dialog :title="title" v-model="addOrUpdateVisible" width="500px" append-to-body>
           <el-form ref="orderRef" :model="form" :rules="rules" label-width="150px">
+            <el-form-item label="评议事项名称" prop="evaluateName">
+              <el-input v-model="form.evaluateName" placeholder="请输入评议事项名称"/>
+            </el-form-item>
             <el-form-item label="被评议人姓名" prop="evaluatedPersonName">
               <el-input v-model="form.evaluatedPersonName" placeholder="请输入被评议人姓名"/>
             </el-form-item>
@@ -99,6 +106,8 @@
             </div>
           </template>
         </el-dialog>
+
+        <add-item  ref="addItemRef"/>
       </el-col>
 
     </el-row>
@@ -108,6 +117,7 @@
 <script setup>
 
 import {addOrder, getOrder, listOrder, publishOrder, removeOrder, updateOrder} from "@/api/evaluate/order/api.js";
+import AddItem from "@/views/evaluate/order/AddItem.vue";
 
 const loading = ref(true)
 const oderList = ref([])
@@ -118,6 +128,7 @@ const title = ref("")
 const single = ref(true)
 const multiple = ref(true)
 const ids = ref([])
+const addItemRef = ref()
 const {proxy} = getCurrentInstance()
 const addOrUpdateVisible = ref(false)
 
@@ -125,6 +136,7 @@ const {evaluate_order_status: orderStatus} = proxy.useDict("evaluate_order_statu
 
 const data = reactive({
   form: {
+    evaluateName: '',
     evaluatedPersonName: '',
     evaluatedPersonDepartment: '',
     deadline: undefined,
@@ -135,6 +147,7 @@ const data = reactive({
     evaluatedPersonName: undefined,
   },
   rules: {
+    evaluateName: [{required: true, message: "评议事项名称不能为空", trigger: "blur"}],
     evaluatedPersonName: [{required: true, message: "被评议人姓名不能为空", trigger: "blur"}],
     evaluatedPersonDepartment: [{required: true, message: "被评议人部门不能为空", trigger: "blur"}],
     deadline: [{required: true, message: "评议截止日期不能为空", trigger: "blur"}]
@@ -212,10 +225,15 @@ function handlePublish(row) {
     return publishOrder(orderId)
   }).then(() => {
     getList()
-    proxy.$modal.msgSuccess("删除成功")
+    proxy.$modal.msgSuccess("发布成功")
   }).catch((err) => {
     console.log({err})
   })
+}
+
+/** 添加议题项*/
+function handleAddItem(row) {
+  addItemRef.value.open(row.orderId)
 }
 
 
