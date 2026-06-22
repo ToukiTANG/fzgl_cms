@@ -63,7 +63,11 @@
               </el-tooltip>
               <el-tooltip content="发布评议" placement="top">
                 <el-button link type="primary" icon="Position" @click="handlePublish(scope.row)"
-                           v-hasPermi="['system:role:edit']"></el-button>
+                           v-hasPermi="['system:role:edit']" v-show="scope.row.status===0"></el-button>
+              </el-tooltip>
+              <el-tooltip content="查看随机码" placement="top">
+                <el-button link type="primary" icon="View" @click="codeInfo(scope.row)"
+                           v-hasPermi="['system:role:edit']" v-show="scope.row.status!==0"></el-button>
               </el-tooltip>
               <!--              <el-tooltip content="添加评议事项" placement="top">-->
               <!--                <el-button link type="primary" icon="Plus" @click="handleAddItem(scope.row)"-->
@@ -77,19 +81,24 @@
         </el-table>
         <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
                     v-model:limit="queryParams.pageSize" @pagination="getList"/>
-        <add-item ref="addItemRef"/>
         <add-or-update ref="addOrUpdateRef" @success="getList"/>
+        <add-code ref="addCodeRef" @success="getList"/>
       </el-col>
-
+      <el-dialog v-model="codeVisible" title="查看随机码">
+        <el-table :data="codeList">
+          <el-table-column label="随机码" key="code" prop="code" align="center"/>
+          <el-table-column label="随机码可使用次数" key="count" prop="count" align="center"/>
+        </el-table>
+      </el-dialog>
     </el-row>
 
   </div>
 </template>
 <script setup>
 
-import {listOrder, publishOrder, removeOrder} from "@/api/evaluate/order/api.js";
-import AddItem from "@/views/evaluate/order/AddItem.vue";
+import {codeDetail, listOrder, removeOrder} from "@/api/evaluate/order/api.js";
 import AddOrUpdate from "@/views/evaluate/order/AddOrUpdate.vue";
+import AddCode from "@/views/evaluate/order/AddCode.vue";
 
 const loading = ref(true)
 const oderList = ref([])
@@ -99,9 +108,11 @@ const dateRange = ref([])
 const single = ref(true)
 const multiple = ref(true)
 const ids = ref([])
-const addItemRef = ref()
 const addOrUpdateRef = ref()
+const addCodeRef = ref()
 const {proxy} = getCurrentInstance()
+const codeVisible = ref(false)
+const codeList = ref([])
 
 const {evaluate_order_status: orderStatus} = proxy.useDict("evaluate_order_status")
 
@@ -168,13 +179,16 @@ function handleDelete(row) {
 /** 发布按钮操作 */
 function handlePublish(row) {
   const orderId = row.orderId
-  proxy.$modal.confirm('是否发布编号为"' + orderId + '"的数据项?').then(function () {
-    return publishOrder(orderId)
-  }).then(() => {
-    getList()
-    proxy.$modal.msgSuccess("发布成功")
+  addCodeRef.value.open('生成随机码', orderId)
+}
+
+/** 查看随机码 */
+function codeInfo(row) {
+  codeDetail(row.orderId).then(res => {
+    codeVisible.value = true
+    codeList.value = res.data
   }).catch((err) => {
-    console.log({err})
+    console.log(err)
   })
 }
 

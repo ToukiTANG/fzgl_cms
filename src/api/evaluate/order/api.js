@@ -46,10 +46,19 @@ export function updateOrder(order) {
 }
 
 //发布评议单
-export function publishOrder(orderId) {
+export function publishOrder(orderId, form) {
     return request({
         url: '/evaluate/order/publish',
         method: 'post',
+        params: {orderId: orderId, codeNum: form.codeNum, codeCount: form.codeCount}
+    })
+}
+
+//查看随机码
+export function codeDetail(orderId) {
+    return request({
+        url: '/evaluate/order/codeInfo',
+        method: 'get',
         params: {orderId: orderId}
     })
 }
