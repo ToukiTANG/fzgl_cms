@@ -78,7 +78,7 @@
         <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
                     v-model:limit="queryParams.pageSize" @pagination="getList"/>
         <add-item ref="addItemRef"/>
-        <add-or-update ref="addOrUpdateRef"/>
+        <add-or-update ref="addOrUpdateRef" @success="getList"/>
       </el-col>
 
     </el-row>
