@@ -42,6 +42,7 @@
           <el-table-column label="被评议人部门" align="center" key="evaluatedPersonDepartment"
                            prop="evaluatedPersonDepartment" width="200"/>
           <el-table-column label="评议截止日期" align="center" key="deadline" prop="deadline" width="130"/>
+          <el-table-column label="评议中间码" align="center" key="intermediateCode" prop="intermediateCode" width="120px"/>
           <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
                            width="200"/>
           <el-table-column label="执行状态" align="center" key="status" prop="status" width="100px">
