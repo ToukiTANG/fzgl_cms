@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 /* Layout */
 import Layout from '@/layout'
 
@@ -155,6 +155,20 @@ export const dynamicRoutes = [
         component: () => import('@/views/tool/gen/editTable'),
         name: 'GenEdit',
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
+      }
+    ]
+  },
+  {
+    path: '/evaluate/answer-data',
+    component: Layout,
+    hidden: true,
+    permissions: ['evaluate:answer:detail'],
+    children: [
+      {
+        path: 'index/:receiptId(\\d+)',
+        component: () => import('@/views/evaluate/answer/data'),
+        name: 'Answer',
+        meta: { title: '评议详情', activeMenu: '/evaluate/receipt' }
       }
     ]
   }
