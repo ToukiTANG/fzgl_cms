@@ -18,6 +18,14 @@
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
+        <el-row :gutter="20" class="mb8">
+          <el-col :span="1.5">
+            <el-button type="warning" plain icon="Download" @click="handleExport"
+                       v-hasPermi="['evaluate:receipt:export']">
+              导出
+            </el-button>
+          </el-col>
+        </el-row>
 
         <el-table v-loading="loading" :data="receiptList">
           <el-table-column label="回执单编号" align="center" key="receiptId" prop="receiptId"
@@ -55,6 +63,7 @@ import {listReceipt} from "@/api/evaluate/receipt/api.js";
 const loading = ref(false)
 const total = ref(0)
 const receiptList = ref([])
+const {proxy} = getCurrentInstance()
 const data = reactive({
   queryParams: {
     pageNum: 1,
@@ -82,6 +91,18 @@ function getList() {
     console.log(error)
     loading.value = false
   })
+}
+
+/** 导出按钮操作 */
+function handleExport() {
+  const intermediateCode= queryParams.value.intermediateCode
+  if( intermediateCode=== undefined||intermediateCode===''){
+    proxy.$modal.msgError("导出时必须指定中间码！")
+    return
+  }
+  proxy.download("evaluate/receipt/export", {
+    ...queryParams.value,
+  }, `receipt_${new Date().getTime()}.xlsx`)
 }
 
 /** 重置按钮操作 */
