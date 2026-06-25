@@ -46,11 +46,12 @@ export function updateOrder(order) {
 }
 
 //发布评议单
-export function publishOrder(orderId, form) {
+export function publishOrder(orderId, codes) {
     return request({
         url: '/evaluate/order/publish',
         method: 'post',
-        params: {orderId: orderId, codeNum: form.codeNum, codeCount: form.codeCount}
+        params: {orderId: orderId},
+        data: codes
     })
 }
 
