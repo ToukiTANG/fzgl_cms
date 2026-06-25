@@ -9,11 +9,11 @@
         <el-form-item label="评议事项名称" prop="evaluateName">
           <el-input v-model="form.evaluateName" placeholder="请输入评议事项名称" :disabled="editDisable"/>
         </el-form-item>
-        <el-form-item label="被评议人姓名" prop="evaluatedPersonName">
-          <el-input v-model="form.evaluatedPersonName" placeholder="请输入被评议人姓名" :disabled="editDisable"/>
-        </el-form-item>
-        <el-form-item label="被评议人部门" prop="evaluatedPersonDepartment">
-          <el-input v-model="form.evaluatedPersonDepartment" placeholder="请输入被评议人部门" :disabled="editDisable"/>
+        <el-form-item label="评议单类型" prop="type">
+          <el-radio-group v-model="form.type" :disabled="editDisable">
+            <el-radio :value="0">评分</el-radio>
+            <el-radio :value="1">问卷</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="评议截止日期" prop="deadline">
           <el-date-picker
@@ -26,6 +26,42 @@
         <el-form-item label="备注">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入备注内容" :disabled="editDisable"/>
         </el-form-item>
+      </el-card>
+
+      <el-card shadow="never" style="margin-bottom: 16px">
+        <template #header>
+          被评议人
+        </template>
+        <div v-for="(item,index) in form.persons" :key="index" class="item-card" style="margin-bottom: 16px">
+          <el-card>
+            <template #header>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>被评议人{{ index + 1 }}</span>
+                <el-button type="danger" @click="removePerson(index)" :disabled="editDisable">删除</el-button>
+              </div>
+            </template>
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="姓名" :prop="`persons.${index}.name`"
+                              :rules="[{required: true,message: '请输入姓名',trigger: 'blur'}]">
+                  <el-input v-model="item.name"/>
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="12">
+                <el-form-item label="部门" :prop="`persons.${index}.department`"
+                              :rules="[{required: true,message: '请输入部门',trigger: 'blur'}]">
+                  <el-input v-model="item.department"/>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-card>
+        </div>
+        <div class="add-item-btn" :class="{ 'but-disabled': editDisable }" @click="!editDisable && addPerson()">
+          <el-icon size="30px">
+            <CirclePlus/>
+          </el-icon>
+        </div>
       </el-card>
 
       <el-card shadow="never" style="margin-bottom: 16px">
@@ -57,9 +93,10 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <div v-if="item.itemType===0||item.itemType===1" class="add-option-btn" :class="{ 'but-disabled': editDisable }"
+                  <div v-if="item.itemType===0||item.itemType===1" class="add-option-btn"
+                       :class="{ 'but-disabled': editDisable }"
                        @click="!editDisable && addOption(item)">
-                    <el-icon size="15px" >
+                    <el-icon size="15px">
                       <Plus/>
                     </el-icon>
                   </div>
@@ -165,9 +202,8 @@ defineExpose({
 const data = reactive({
   form: {
     orderId: undefined,
+    type: undefined,
     evaluateName: '',
-    evaluatedPersonName: '',
-    evaluatedPersonDepartment: '',
     deadline: undefined,
     items: [{
       orderId: '',
@@ -180,7 +216,8 @@ const data = reactive({
         optionCode: undefined,
         optionContent: '',
         sortNum: undefined,
-      }]
+      }],
+      persons: []
     }],
   },
   rules: {
@@ -198,23 +235,29 @@ const emit = defineEmits(['success'])
 function initForm() {
   form.value = {
     orderId: undefined,
+    type: 0,
     evaluateName: '',
     evaluatedPersonName: '',
     evaluatedPersonDepartment: '',
     deadline: undefined,
     items: [],
+    persons: []
   }
   editDisable.value = false
 }
 
 /** 提交按钮 */
 function submitForm() {
+  if (!form.value.persons.length) {
+    proxy.$modal.msgError("请至少添加一个被评议人")
+    return
+  }
+
   if (!form.value.items.length) {
     proxy.$modal.msgError("请至少添加一个评议项点")
     return
   }
 
-  console.log(form.value.items)
   const invalidItem = form.value.items.find(item =>
       (item.itemType === 0 || item.itemType === 1)
       && (!item.options || item.options.length === 0)
@@ -257,6 +300,24 @@ function reset() {
 function cancel() {
   addOrUpdateVisible.value = false
   initForm()
+}
+
+/**
+ * 增加人员
+ */
+function addPerson() {
+  form.value.persons.push({
+    orderId: form.value.orderId,
+    name: '',
+    department: '',
+  })
+}
+
+/**
+ * 删除人员
+ */
+function removePerson(index) {
+  form.value.persons.splice(index, 1)
 }
 
 /**

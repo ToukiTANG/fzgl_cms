@@ -37,12 +37,14 @@
           <el-table-column label="评议单编号" align="center" key="orderId" prop="orderId" :show-overflow-tooltip="true"
                            width="200"/>
           <el-table-column label="评议事项名" align="center" key="evaluateName" prop="evaluateName" width="400px"/>
-          <el-table-column label="被评议人姓名" align="center" key="evaluatedPersonName" prop="evaluatedPersonName"
-                           width="130"/>
-          <el-table-column label="被评议人部门" align="center" key="evaluatedPersonDepartment"
-                           prop="evaluatedPersonDepartment" width="200"/>
+          <el-table-column label="评议单类型" align="center" key="type" prop="type" width="130">
+            <template #default="scope">
+              <dict-tag :options="orderType" :value="scope.row.type"/>
+            </template>
+          </el-table-column>
           <el-table-column label="评议截止日期" align="center" key="deadline" prop="deadline" width="130"/>
-          <el-table-column label="评议中间码" align="center" key="intermediateCode" prop="intermediateCode" width="120px"/>
+          <el-table-column label="评议中间码" align="center" key="intermediateCode" prop="intermediateCode"
+                           width="120px"/>
           <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
                            width="200"/>
           <el-table-column label="执行状态" align="center" key="status" prop="status" width="100px">
@@ -51,10 +53,9 @@
             </template>
           </el-table-column>
           <el-table-column label="创建日期" align="center" key="createTime" prop="createTime" width="200px"/>
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right"
-                           width="200px">
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right">
             <template #default="scope">
-              <el-tooltip content="修改" placement="top">
+              <el-tooltip content="查看/修改" placement="top">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                            v-hasPermi="['evaluate:order:edit']"></el-button>
               </el-tooltip>
@@ -116,6 +117,7 @@ const codeVisible = ref(false)
 const codeList = ref([])
 
 const {evaluate_order_status: orderStatus} = proxy.useDict("evaluate_order_status")
+const {evaluate_order_type: orderType} = proxy.useDict("evaluate_order_type")
 
 const data = reactive({
   form: {
