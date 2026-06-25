@@ -166,7 +166,7 @@ export const dynamicRoutes = [
     children: [
       {
         path: 'index/:receiptId(\\d+)',
-        component: () => import('@/views/evaluate/answer/data'),
+        component: () => import('@/views/evaluate/answer/AnswerData.vue'),
         name: 'Answer',
         meta: { title: '评议详情', activeMenu: '/evaluate/receipt' }
       }
