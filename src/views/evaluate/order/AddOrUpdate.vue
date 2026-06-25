@@ -10,7 +10,7 @@
           <el-input v-model="form.evaluateName" placeholder="请输入评议事项名称" :disabled="editDisable"/>
         </el-form-item>
         <el-form-item label="评议单类型" prop="type">
-          <el-radio-group v-model="form.type" :disabled="editDisable">
+          <el-radio-group v-model="form.type" :disabled="editDisable" @change="changeOrderType()">
             <el-radio :value="0">评分</el-radio>
             <el-radio :value="1">问卷</el-radio>
           </el-radio-group>
@@ -64,7 +64,47 @@
         </div>
       </el-card>
 
-      <el-card shadow="never" style="margin-bottom: 16px">
+      <!--评分-->
+      <el-card v-show="form.type===0" shadow="never" style="margin-bottom: 16px">
+        <template #header>
+          评议内容
+        </template>
+        <div v-for="(item,index) in form.items" :key="index" class="item-card" style="margin-bottom: 16px">
+          <el-card>
+            <template #header>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>项点{{ index + 1 }}</span>
+                <el-button type="danger" @click="removeItem(index)" :disabled="editDisable">删除</el-button>
+              </div>
+            </template>
+            <el-form-item label="题目内容" :prop="`items.${index}.title`"
+                          :rules="[{required: true,message: '请输入题目内容',trigger: 'blur'}]">
+              <el-input v-model="item.title" placeholder="请输入题目" :disabled="editDisable"/>
+            </el-form-item>
+
+            <el-form-item label="是否必填" :prop="`items.${index}.required`"
+                          :rules="[{required: true,message: '请选择是否必填', trigger: 'change' } ]">
+              <el-radio-group v-model="item.required" :disabled="editDisable">
+                <el-radio :value="true">是</el-radio>
+                <el-radio :value="false">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="题目排序" :prop="`items.${index}.sortNum`"
+                          :rules="[ {required: true, message: '请输入排序号', trigger: 'blur' } ]">
+              <el-input-number v-model="item.sortNum" :disabled="editDisable"/>
+            </el-form-item>
+
+          </el-card>
+        </div>
+        <div class="add-item-btn" :class="{ 'but-disabled': editDisable }" @click="!editDisable && addItem()">
+          <el-icon size="30px">
+            <CirclePlus/>
+          </el-icon>
+        </div>
+      </el-card>
+
+      <!--问卷-->
+      <el-card v-show="form.type===1" shadow="never" style="margin-bottom: 16px">
         <template #header>
           评议内容
         </template>
@@ -258,6 +298,14 @@ function submitForm() {
     return
   }
 
+  // 如果是评分,设置所有题目类型为评分
+  if (form.value.type === 0) {
+    form.value.items.forEach(item => {
+      item.itemType = 3
+    })
+  }
+
+  console.log(form.value)
   const invalidItem = form.value.items.find(item =>
       (item.itemType === 0 || item.itemType === 1)
       && (!item.options || item.options.length === 0)
@@ -267,6 +315,7 @@ function submitForm() {
     proxy.$modal.msgError("单选题或多选题至少需要一个选项")
     return
   }
+
   proxy.$refs["orderRef"].validate(valid => {
     if (valid) {
       if (form.value.orderId !== undefined) {
@@ -300,6 +349,11 @@ function reset() {
 function cancel() {
   addOrUpdateVisible.value = false
   initForm()
+}
+
+/** 切换评议类型 */
+function changeOrderType() {
+  form.value.items.length = 0
 }
 
 /**
