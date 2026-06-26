@@ -56,20 +56,26 @@
           </template>
         </el-table-column>
       </el-table>
+      <template #footer>
+        <el-button type="primary" @click="submitFinalAnswer">提交全部评议</el-button>
+      </template>
     </el-card>
 
-    <AnswerData ref="answerDialogRef" @success="loadData"/>
+    <AnswerData ref="answerDialogRef" @success="handleAnswerSuccess"/>
   </div>
 </template>
 
 <script setup>
 import AnswerData from "@/views/evaluate/answer/AnswerData.vue";
-import {evaluateContent} from "@/api/evaluate/execution/api.js";
+import {evaluateContent, submitAnswer} from "@/api/evaluate/execution/api.js";
 
 const answerDialogRef = ref()
 const queryForm = reactive({
   intermediateCode: '',
   randomCode: ''
+})
+const order = ref({
+  persons: []
 })
 
 const loaded = ref(false)
@@ -120,22 +126,15 @@ function resetQuery() {
   loaded.value = false
 }
 
-const order = ref({})
 
-function loadData() {
-  // 查询评议单详情
-  proxy.$refs["queryRef"].validate(valid => {
-    if (valid) {
-      evaluateContent(queryForm).then(response => {
-        order.value = response.data
-        loaded.value = true
-        proxy.$modal.msgSuccess("加载成功")
-      }).catch(error => {
-        console.log(error)
-      })
-    }
-  })
+function handleAnswerSuccess(updatedPerson) {
+  const index = order.value.persons.findIndex(
+      p => p.personId === updatedPerson.personId
+  )
 
+  if (index !== -1) {
+    order.value.persons[index] = updatedPerson
+  }
 }
 
 function openAnswer(person) {
@@ -145,9 +144,39 @@ function openAnswer(person) {
   )
 }
 
-onMounted(() => {
-  loadData()
-})
+function submitFinalAnswer() {
+  console.log(order.value)
+  const answers = order.value.persons.flatMap(person =>
+      (person.answers || []).map(answer => ({
+        personId: person.personId,
+        ...answer
+      }))
+  )
+  if (validateAnswers()) {
+    const result = {
+      orderId: order.value.orderId,
+      intermediateCode: queryForm.intermediateCode,
+      randomCode: queryForm.randomCode,
+      answers: answers
+    }
+    submitAnswer(result).then(response => {
+      proxy.$modal.msgSuccess("提交成功")
+      resetQuery()
+    }).catch(error => {
+      console.log(error)
+    })
+  }
+}
+
+function validateAnswers() {
+  order.value.persons.forEach(p => {
+    if (!p.personStatus) {
+      proxy.$modal.msgError("还未完成所有人员的评议！")
+      return false
+    }
+  })
+  return true
+}
 </script>
 
 <style scoped lang="scss">

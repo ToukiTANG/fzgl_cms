@@ -8,3 +8,4 @@ export function receiptDetail(receiptId) {
         params: {receiptId: receiptId},
     })
 }
+

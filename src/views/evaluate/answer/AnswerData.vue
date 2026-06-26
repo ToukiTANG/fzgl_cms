@@ -21,7 +21,8 @@
             </div>
 
             <!-- 单选 -->
-            <el-radio-group v-if="item.itemType === 0" v-model="answerForm.answers[item.itemId]" class="question-content">
+            <el-radio-group v-if="item.itemType === 0" v-model="answers[index].content"
+                            class="question-content">
               <el-radio v-for="option in item.options" :key="option.optionId" :value="option.optionCode">
                 {{ option.optionCode }}.
                 {{ option.optionContent }}
@@ -29,7 +30,7 @@
             </el-radio-group>
 
             <!-- 多选 -->
-            <el-checkbox-group v-else-if="item.itemType === 1" v-model="answerForm.answers[item.itemId]"
+            <el-checkbox-group v-else-if="item.itemType === 1" v-model="answers[index].content"
                                class="question-content">
               <el-checkbox v-for="option in item.options" :key="option.optionId" :value="option.optionCode">
                 {{ option.optionCode }}.
@@ -39,12 +40,13 @@
 
             <!-- 填空 -->
             <div v-else-if="item.itemType === 2" class="question-content">
-              <el-input v-model="answerForm.answers[item.itemId]" type="textarea" :rows="3" placeholder="请输入内容"/>
+              <el-input v-model="answers[index].content" type="textarea" :rows="3"
+                        placeholder="请输入内容"/>
             </div>
 
             <!-- 打分 -->
             <div v-else-if="item.itemType === 3" class="question-content">
-            <el-input-number v-model="answerForm.answers[item.itemId]" :min="0" :max="100"/>
+              <el-input-number v-model="answers[index].content" :min="0" :max="100"/>
             </div>
 
           </div>
@@ -61,19 +63,35 @@
 </template>
 
 <script setup>
+const {proxy} = getCurrentInstance()
 
-const emit = defineEmits(['success'])
+const emit = defineEmits(["success"])
+
 const visible = ref(false)
-const formRef = ref()
+
 const order = ref({})
 const person = ref({})
-const answerForm = reactive({
-  answers: {}
-})
 
+/**
+ * 页面答题数据
+ *
+ * content:
+ * 单选 String
+ * 多选 String[]
+ * 问答 String
+ * 打分 Number
+ */
+const answers = ref([])
+
+/**
+ * 打开窗口
+ */
 function open(orderData, personData) {
   order.value = orderData
   person.value = personData
+
+  initAnswers()
+
   visible.value = true
 }
 
@@ -81,54 +99,161 @@ defineExpose({
   open
 })
 
-function submitForm() {
+/**
+ * 初始化答案
+ */
+function initAnswers() {
 
+  answers.value = order.value.items.map(item => {
+
+    const oldAnswer = person.value.answers?.find(
+        a => a.itemId === item.itemId
+    )
+
+    let content
+
+    if (!oldAnswer) {
+
+      switch (item.itemType) {
+
+        case 1: // 多选
+          content = []
+          break
+
+        case 3: // 打分
+          content = null
+          break
+
+        default:
+          content = ""
+      }
+
+    } else {
+
+      switch (item.itemType) {
+
+        case 1:
+          content = oldAnswer.content
+              ? oldAnswer.content.split(",")
+              : []
+          break
+
+        case 3:
+          content =
+              oldAnswer.content === ""
+                  ? null
+                  : Number(oldAnswer.content)
+          break
+
+        default:
+          content = oldAnswer.content
+      }
+
+    }
+
+    return {
+      recordId: oldAnswer?.recordId ?? null,
+      itemId: item.itemId,
+      itemType: item.itemType,
+      content
+    }
+
+  })
 }
 
 /**
- * 建立答案
+ * 校验
  */
-function buildRecords() {
-  return order.value.items.map(item => ({
-    recordId: null,
-    itemId: item.itemId,
-    content: Array.isArray(answerForm.answers[item.itemId])
-        ? answerForm.answers[item.itemId].join(",")
-        : answerForm.answers[item.itemId]
-  }))
-}
-/*验证答案必填项*/
 function validateAnswers() {
 
   for (let i = 0; i < order.value.items.length; i++) {
 
     const item = order.value.items[i]
+    const answer = answers.value[i].content
 
     if (!item.required) {
       continue
     }
 
-    const answer = answerForm.answers[item.itemId]
+    switch (item.itemType) {
 
-    if (item.itemType === 0 && !answer) {
-      proxy.$modal.msgError(`第${i + 1}题未作答`)
-      return false
+      case 0:
+
+        if (!answer) {
+          proxy.$modal.msgError(`第${i + 1}题未作答`)
+          return false
+        }
+
+        break
+
+      case 1:
+
+        if (answer.length === 0) {
+          proxy.$modal.msgError(`第${i + 1}题未作答`)
+          return false
+        }
+
+        break
+
+      case 2:
+
+        if (!answer.trim()) {
+          proxy.$modal.msgError(`第${i + 1}题未作答`)
+          return false
+        }
+
+        break
+
+      case 3:
+
+        if (answer == null) {
+          proxy.$modal.msgError(`第${i + 1}题未作答`)
+          return false
+        }
+
+        break
     }
 
-    if (item.itemType === 1 && (!answer || answer.length === 0)) {
-      proxy.$modal.msgError(`第${i + 1}题未作答`)
-      return false
-    }
-
-    if (item.itemType === 2 && (!answer || !answer.trim())) {
-      proxy.$modal.msgError(`第${i + 1}题未作答`)
-      return false
-    }
   }
 
   return true
 }
 
+/**
+ * 提交
+ */
+function submitForm() {
+
+  if (!validateAnswers()) {
+    return
+  }
+
+  person.value.personStatus = true
+
+  person.value.answers = answers.value.map(answer => ({
+
+    recordId: answer.recordId,
+
+    itemId: answer.itemId,
+
+    itemType: answer.itemType,
+
+    personId:person.value.personId,
+
+    content: Array.isArray(answer.content)
+        ? answer.content.join(",")
+        : String(answer.content ?? "")
+
+  }))
+
+  emit("success", person.value)
+
+  visible.value = false
+}
+
+/**
+ * 返回
+ */
 function goBack() {
   visible.value = false
 }
@@ -145,6 +270,7 @@ function goBack() {
   margin-top: 30px;
   text-align: center;
 }
+
 .question-area {
   min-height: 400px;
   padding: 20px 0;
