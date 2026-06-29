@@ -86,6 +86,7 @@ function codeNumChange() {
 function submitForm() {
   if (form.value.codes.length <= 0) {
     proxy.$modal.msgError("请点击生成随机码")
+    return
   }
 
   proxy.$refs["addCodeForm"].validate(valid => {

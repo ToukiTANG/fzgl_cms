@@ -45,15 +45,15 @@
           <el-table-column label="评议截止日期" align="center" key="deadline" prop="deadline" width="130"/>
           <el-table-column label="评议中间码" align="center" key="intermediateCode" prop="intermediateCode"
                            width="120px"/>
-          <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
-                           width="200"/>
           <el-table-column label="执行状态" align="center" key="status" prop="status" width="100px">
             <template #default="scope">
               <dict-tag :options="orderStatus" :value="scope.row.status"/>
             </template>
           </el-table-column>
+          <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
+                           width="200"/>
           <el-table-column label="创建日期" align="center" key="createTime" prop="createTime" width="200px"/>
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right">
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="150px">
             <template #default="scope">
               <el-tooltip content="查看/修改" placement="top">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
