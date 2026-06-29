@@ -57,7 +57,9 @@
         </el-table-column>
       </el-table>
       <template #footer>
-        <el-button type="primary" @click="submitFinalAnswer">提交全部评议</el-button>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="submitFinalAnswer" :disabled="!loaded">提交全部评议</el-button>
+        </div>
       </template>
     </el-card>
 
@@ -180,5 +182,9 @@ function validateAnswers() {
 </script>
 
 <style scoped lang="scss">
-
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>
