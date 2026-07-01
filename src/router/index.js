@@ -87,7 +87,7 @@ export const constantRoutes = [
     //答题页面
     {
         path: '/evaluate/answer',
-        component: () => import('@/views//evaluate/answer/index.vue'),
+        component: () => import('@/views/evaluate/answer/index.vue'),
         hidden: true,
         meta: {
             title: '匿名评议'
