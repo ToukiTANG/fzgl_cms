@@ -9,7 +9,7 @@
       <el-descriptions :column="2" border>
         <el-descriptions-item label="评议名称">{{ order.evaluateName }}</el-descriptions-item>
         <el-descriptions-item label="截止日期"> {{ order.deadline }}</el-descriptions-item>
-        <el-descriptions-item label="随机码"> {{ order.intermediateCode }}</el-descriptions-item>
+        <el-descriptions-item label="中间码"> {{ order.intermediateCode }}</el-descriptions-item>
       </el-descriptions>
     </el-card>
 

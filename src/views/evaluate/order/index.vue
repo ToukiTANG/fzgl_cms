@@ -53,8 +53,7 @@
           <el-table-column label="备注" align="center" key="remark" prop="remark" :show-overflow-tooltip="true"
                            width="200"/>
           <el-table-column label="创建日期" align="center" key="createTime" prop="createTime" width="200px"/>
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right"
-                           width="150px">
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right">
             <template #default="scope">
               <el-tooltip content="查看/修改" placement="top">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"

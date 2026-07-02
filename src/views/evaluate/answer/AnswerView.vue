@@ -5,7 +5,7 @@
         <template #header>
           <div class="card-header">
             <span>{{ order.evaluateName }} </span>
-            <el-tag> {{ person.name }}</el-tag>
+            <el-tag>被评议人：{{ person.name }}</el-tag>
           </div>
         </template>
         <div class="question-area">
