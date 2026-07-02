@@ -147,7 +147,6 @@ function openAnswer(person) {
 }
 
 function submitFinalAnswer() {
-  console.log(order.value)
   const answers = order.value.persons.flatMap(person =>
       (person.answers || []).map(answer => ({
         personId: person.personId,
@@ -171,13 +170,14 @@ function submitFinalAnswer() {
 }
 
 function validateAnswers() {
+  let flag = true
   order.value.persons.forEach(p => {
     if (!p.personStatus) {
       proxy.$modal.msgError("还未完成所有人员的评议！")
-      return false
+      flag = false
     }
   })
-  return true
+  return flag
 }
 </script>
 
