@@ -45,8 +45,10 @@
             </div>
 
             <!-- 打分 -->
-            <div v-else-if="item.itemType === 3" class="question-content">
-              <el-input-number v-model="answers[index].content" :min="0" :max="100"/>
+            <div class="number-range question-content" v-else-if="item.itemType === 3">
+              <span class="range-text">最小：{{item.minValue}}</span>
+              <el-input-number v-model="answers[index].content" :min="item.minValue" :max="item.maxValue"/>
+              <span class="range-text">最大：{{item.maxValue}}</span>
             </div>
 
           </div>
@@ -238,7 +240,7 @@ function submitForm() {
 
     itemType: answer.itemType,
 
-    personId:person.value.personId,
+    personId: person.value.personId,
 
     content: Array.isArray(answer.content)
         ? answer.content.join(",")
@@ -306,5 +308,17 @@ function goBack() {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+}
+
+.number-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-text {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
 }
 </style>

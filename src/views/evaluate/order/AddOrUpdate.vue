@@ -81,7 +81,14 @@
                           :rules="[{required: true,message: '请输入题目内容',trigger: 'blur'}]">
               <el-input v-model="item.title" placeholder="请输入题目" :disabled="editDisable"/>
             </el-form-item>
-
+            <el-form-item label="题目最小分数" :prop="`items.${index}.minValue`"
+                          :rules="[ {required: true, message: '请输入题目最小分数', trigger: 'blur' } ]">
+              <el-input-number v-model="item.minValue" :disabled="editDisable" :min="0"/>
+            </el-form-item>
+            <el-form-item label="题目最大分数" :prop="`items.${index}.maxValue`"
+                          :rules="[ {required: true, message: '请输入题目最大分数', trigger: 'blur' } ]">
+              <el-input-number v-model="item.maxValue" :disabled="editDisable" :min="0"/>
+            </el-form-item>
             <el-form-item label="是否必填" :prop="`items.${index}.required`"
                           :rules="[{required: true,message: '请选择是否必填', trigger: 'change' } ]">
               <el-radio-group v-model="item.required" :disabled="editDisable">
@@ -264,7 +271,8 @@ const data = reactive({
     evaluateName: [{required: true, message: "评议事项名称不能为空", trigger: "blur"}],
     evaluatedPersonName: [{required: true, message: "被评议人姓名不能为空", trigger: "blur"}],
     evaluatedPersonDepartment: [{required: true, message: "被评议人部门不能为空", trigger: "blur"}],
-    deadline: [{required: true, message: "评议截止日期不能为空", trigger: "blur"}]
+    deadline: [{required: true, message: "评议截止日期不能为空", trigger: "blur"}],
+    type: [{required: true, message: "评议类型必须选择", trigger: "blur"}]
   }
 })
 
